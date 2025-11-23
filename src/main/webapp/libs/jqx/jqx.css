@@ -1,0 +1,125 @@
+/*  */
+.bq-date-editor {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.bq-date-input {
+    padding: 5px 25px 5px 5px; /* místo pro ikonu */
+    border: 1px solid #ccc;
+    width: 120px;
+    font-family: Segoe UI;
+    font-size: 12px;
+    border-radius: 4px;
+    position: relative;
+}
+
+/* Ikona kalendáře pomocí ::after */
+.bq-date-input::after {
+	content: "📅";
+	position: absolute;
+	right: 8px;
+	top: 50%;
+	transform: translateY(-50%);
+	pointer-events: none;
+	font-size: 16px;
+}
+
+/* Stav validního inputu */
+.bq-date-input.valid {
+	border-color: green;
+}
+
+/* Stav nevalidního inputu */
+.bq-date-input.invalid {
+	border-color: red;
+}
+
+/*  */
+.bq-datepicker {
+	display: flex;
+	align-items: center;
+	border: 1px solid #c4c4c4;
+	width: 120px;
+	height: 24px;
+	overflow: hidden;
+}
+.bq-datepicker-input {
+	padding: 5px;
+	min-width: 70px;
+	/* height: 24px; */
+	height: 100%;
+	flex: 1 1 auto;
+	background: #fff;
+	border: none;
+	font-family: Segoe UI;
+	font-size: 12px;
+	/* border-radius: 4px; */
+}
+.bq-datepicker-btn {
+	border: none;
+	border-left: 1px solid #c4c4c4;
+	background: #fff;
+	cursor: pointer;
+	padding: 2px;
+	height: 100%;
+	flex: 0 0 24px;
+	font-size: 14px;
+	border-radius: 0;
+}
+.bq-datepicker-input.valid {
+	border-color: green;
+}
+.bq-datepicker-input.invalid {
+	border-color: red;
+}
+/*  */
+.jqx-dropdown-container {
+    position: relative;
+    display: inline-block;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 200px;
+}
+.jqx-dropdown-container::after {
+    /*content: '\25BC'; *//* Unicode znak ▼ (černý trojúhelník dolů) */
+    /*content: '\23F7';  *//* nebo ⏷ (modernější šipka) */
+    content: '\2C7'; /* nebo ˇ (malý háček/chevron) */
+    
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%); /* Vycentrování vertikálně */
+    pointer-events: none; /* Zajistí, že kliknutí na šipku se chová jako kliknutí na kontejner */
+    color: #aaa;
+    font-size: 0.99em; /* Menší šipka */
+}
+
+.jqx-dropdown-list {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    z-index: 1000;
+}
+.jqx-dropdown-list li {
+    padding: 5px 10px;
+    cursor: pointer;
+}
+.jqx-dropdown-list li:hover {
+    background-color: #f0f0f0;
+}
+
+.bq-datetime-container input {
+    /* Základní styl pro viditelný input */
+    padding: 5px;
+    border: 1px solid #ccc;
+}
