@@ -1,12 +1,17 @@
 package cz.burios.qpx.darwin.controller;
 
-import java.util.List;
+import java.io.File;
+import java.io.FileInputStream;
 
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.ModelAndView;
 
 import cz.burios.qpx.darwin.db.dao.FileStoreDao;
 import cz.burios.qpx.darwin.model.FileRecord;
@@ -18,22 +23,11 @@ import jakarta.servlet.http.HttpServletResponse;
 @RequestMapping("/files")
 public class FileController {
 
-	private final FileUploader uploader = new FileUploader("D:/DATA/repo/darwin");
-	private final FileDownloader downloader = new FileDownloader("D:/DATA/repo/darwin");
+	private final String uploadDir = "D:/DATA/repo/darwin";
+	private final FileUploader uploader = new FileUploader(uploadDir);
+	private final FileDownloader downloader = new FileDownloader(uploadDir);
 
-	@GetMapping("/upload")
-	public String showUploadForm(Model model) {
-		try {
-			FileStoreDao dao = new FileStoreDao();
-			List<FileRecord> files = dao.findAll(); // nová metoda v DAO
-			model.addAttribute("files", files);
-		} catch (Exception e) {
-			model.addAttribute("error", "Chyba při načítání seznamu souborů: " + e.getMessage());
-		}
-		return "upload";
-	}
-
-	@PostMapping("/uploading")
+	@PostMapping("/upload")
 	public String handleFileUpload(@RequestParam("file") MultipartFile file, Model model) {
 		try {
 			// ModelAndView
@@ -46,41 +40,21 @@ public class FileController {
 		}
 	}
 
-	@GetMapping("/download")
-	public String showDownloadForm(Model model) {
-		try {
-			FileStoreDao dao = new FileStoreDao();
-			List<FileRecord> files = dao.findAll();
-			System.out.println("FileController.showDownloadForm().files: " + files);
-			model.addAttribute("files", files);
-		} catch (Exception e) {
-			model.addAttribute("error", "Chyba při načítání seznamu souborů: " + e.getMessage());
-		}
-		return "download";
+	@PostMapping("/ajax/upload")
+	@ResponseBody
+	public FileRecord handleAjaxUpload(@RequestParam("file") MultipartFile file) throws Exception {
+		String id = uploader.uploadFile(file);
+		FileStoreDao dao = new FileStoreDao();
+		return dao.findById(id);
 	}
-	/*
-	@GetMapping("/downloading")
-	public void download(@RequestParam("fileId") String id, HttpServletResponse response) {
-		System.out.println("FileController.downloadFile(" + id + ")");
-		try {
-			FileStoreDao dao = new FileStoreDao();
-			String fileName = dao.getFileNameById(id);
-			if (fileName == null) {
-				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Soubor s ID " + id + " nenalezen");
-				return;
-			}
-			downloader.downloadFileByName(fileName, response);
-		} catch (Exception e) {
-			throw new RuntimeException("Chyba při stahování souboru", e);
-		}
-	}
-	*/
-	@GetMapping(value = "/downloading", params = "fileId")
+
+	@GetMapping(value = "/download", params = "fileId")
 	public void downloadFile(@RequestParam("fileId") String fileId, HttpServletResponse response) {
+		System.out.println("FileController.downloadFile(" + fileId + ")");
 		try {
 			FileStoreDao dao = new FileStoreDao();
 			String fileName = dao.getFileNameById(fileId);
-			
+
 			if (fileName == null) {
 				response.sendError(HttpServletResponse.SC_NOT_FOUND, "Soubor s ID " + fileId + " nenalezen");
 				return;
@@ -90,4 +64,20 @@ public class FileController {
 			throw new RuntimeException("Chyba při stahování souboru", e);
 		}
 	}
+
+	@GetMapping(value = "/files/ajax/download", params = "fileId")
+	public ResponseEntity<Resource> downloadFileAjax(@PathVariable String fileId) throws Exception {
+		FileStoreDao dao = new FileStoreDao();
+		String fileName = dao.getFileNameById(fileId);
+		if (fileName == null) {
+			return ResponseEntity.notFound().build();
+		}
+		File file = new File(uploadDir, fileName);
+		InputStreamResource resource = new InputStreamResource(new FileInputStream(file));
+
+		return ResponseEntity.ok()
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + file.getName() + "\"")
+				.contentLength(file.length()).contentType(MediaType.APPLICATION_OCTET_STREAM).body(resource);
+	}
+
 }

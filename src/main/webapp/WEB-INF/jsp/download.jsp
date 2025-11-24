@@ -1,5 +1,5 @@
 <%@ page contentType="text/html;charset=UTF-8"%>
-
+<%@ taglib prefix = "c" uri = "http://java.sun.com/jsp/jstl/core" %>
 <html lang="cs">
 <head>
 	<meta charset="UTF-8">
@@ -24,7 +24,7 @@
 </head>
 <body>
 	<h2>Buriosca.cz - Darwin QPX - Download</h2>
-	<form method="get" action="/darwin/files/downloadjng">
+	<form method="get" action="/darwin/files/downloading">
 		<label for="fileId">Vyber soubor:</label>
 		<select name="fileId" id="fileId">
 			<c:forEach var="file" items="${files}">

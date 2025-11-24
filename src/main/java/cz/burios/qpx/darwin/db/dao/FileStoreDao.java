@@ -43,9 +43,9 @@ public class FileStoreDao {
 	public List<FileRecord> findAll() throws Exception {
 		List<FileRecord> list = new ArrayList<>();
 		try (Connection conn = DBContext.getDataSource().getConnection();
-			 PreparedStatement ps = conn.prepareStatement("SELECT id, file_name FROM file_store");
-			 ResultSet rs = ps.executeQuery()) {
-			
+				PreparedStatement ps = conn.prepareStatement("SELECT id, file_name FROM file_store");
+				ResultSet rs = ps.executeQuery()) {
+
 			while (rs.next()) {
 				FileRecord record = new FileRecord(rs.getString("id"), rs.getString("file_name"));
 				list.add(record);
@@ -54,5 +54,18 @@ public class FileStoreDao {
 			e.printStackTrace();
 		}
 		return list;
+	}
+
+	public FileRecord findById(String id) throws Exception {
+		try (Connection conn = DBContext.getDataSource().getConnection();
+			 PreparedStatement ps = conn.prepareStatement("SELECT id, file_name FROM file_store WHERE id=?")) {
+			ps.setString(1, id);
+			try (ResultSet rs = ps.executeQuery()) {
+				if (rs.next()) {
+					return new FileRecord(rs.getString("id"), rs.getString("file_name"));
+				}
+			}
+		}
+		return null;
 	}
 }
