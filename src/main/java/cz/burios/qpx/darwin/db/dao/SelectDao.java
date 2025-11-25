@@ -8,6 +8,7 @@ import cz.burios.qpx.darwin.db.DBContext;
 
 public class SelectDao {
 	
+	private List<String> selectedColumns = new ArrayList<>();
 	private String tableName;
 	private String whereClause;
 	private List<Object> whereParams = new ArrayList<>();
@@ -16,11 +17,24 @@ public class SelectDao {
 	private Integer limitValue;
 	private Integer offsetValue;
 
-	public SelectDao select(String tableName) {
+	// vybrané sloupce
+	public SelectDao select(Object... columns) {
+		selectedColumns.clear();
+		if (columns != null) {
+			for (Object col : columns) {
+				selectedColumns.add(col.toString());
+			}
+		}
+		return this;
+	}
+
+	// tabulka
+	public SelectDao from(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
 
+	// WHERE s parametry
 	public SelectDao where(String condition, Object... params) {
 		this.whereClause = condition;
 		this.whereParams.clear();
@@ -52,8 +66,17 @@ public class SelectDao {
 		return this;
 	}
 
+	// provedení SELECT
 	public List<BasicRecord> execute() throws Exception {
-		StringBuilder sql = new StringBuilder("SELECT * FROM ").append(tableName);
+		StringBuilder sql = new StringBuilder("SELECT ");
+
+		if (selectedColumns.isEmpty()) {
+			sql.append("*");
+		} else {
+			sql.append(String.join(", ", selectedColumns));
+		}
+
+		sql.append(" FROM ").append(tableName);
 
 		if (whereClause != null)
 			sql.append(" WHERE ").append(whereClause);
