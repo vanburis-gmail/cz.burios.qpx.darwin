@@ -38,7 +38,38 @@ public class HomeController {
 			new UpdateDao().update("file_store").set(upd).where("id=?", "FS02_00000099").execute();
 			
 			// DELETE
-			new DeleteDao().delete("file_store").where("id=?", "FS02_00000099").execute();			 
+			new DeleteDao().delete("file_store").where("id=?", "FS02_00000099").execute();	
+			
+			// ----------------------------------------------------------
+			
+			List<BasicRecord> data = BasicDaoFactory
+				.select("id", "file_name")
+				.from("file_store")
+				.where("id=?", "FS02_00000001")
+				.orderBy("id", "DESC")
+				.limit(10)
+				.offset(20)
+				.execute();
+
+			BasicRecord rec = new BasicRecord();
+			rec.setString("id", "FS02_00000100");
+			rec.setString("file_name", "novy.png");
+			
+			BasicDaoFactory.insert("file_store")
+				.values(rec)
+				.execute();
+
+			BasicRecord upd = new BasicRecord();
+			upd.setString("file_name", "upraveny.png");
+			
+			BasicDaoFactory.update("file_store")
+				.set(upd)
+				.where("id=?", "FS02_00000100")
+				.execute();
+
+			BasicDaoFactory.delete("file_store")
+				.where("id=?", "FS02_00000100")
+				.execute();    		
 			 */
 		} catch (Exception e) {
 			e.printStackTrace();
