@@ -1,4 +1,6 @@
 <%@ page contentType="text/html;charset=UTF-8" %>
+<%@ taglib prefix = "c" uri = "http://java.sun.com/jsp/jstl/core" %>
+
 <html lang="cs">
 	<head>
 		<meta charset="UTF-8">
@@ -6,28 +8,23 @@
 	
 		<title>Buriosca.cz - Darwin QPX</title>
 
-		<link rel="icon" href="/devel/favicon.png">
-		<link rel="stylesheet" href="/buquet/libs/jqx/jqx.css" rel="stylesheet" type="text/css">
+		<link rel="icon" href="/darwin/favicon.png">
+		<link rel="stylesheet" href="/darwin/libs/jqx/jqx.css" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
-		.field {
-			padding: 4px 0;
+		html, body {
+			font-family: Segoe UI;
+			font-size: 12px;
 		}
 		</style>
 
-		<script type="text/javascript" src="/buquet/libs/jquery/jquery-3.4.1.js"></script>
-		<script type="text/javascript" src="/buquet/libs/jqx/jqxAppBar.js?build=${timeNo}"></script>
-		<script type="text/javascript" src="/buquet/libs/jqx/jqxNumberEditor.js?build=${timeNo}"></script>
-		<script type="text/javascript" src="/buquet/libs/jqx/jqxDateTimeEditor.js?build=${timeNo}"></script>
-		<script type="text/javascript" src="/buquet/libs/jqx/jqxButton.js?build=${timeNo}"></script>
-		<script type="text/javascript" src="/buquet/libs/jqx/jqxDropdown.js?build=${timeNo}"></script>
-		<script type="text/javascript" src="/buquet/libs/bq/bqDateEditor.js?build=${timeNo}"></script>
+		<script type="text/javascript" src="/darwin/libs/jquery/jquery-3.4.1.js"></script>
 
 		<script>
 		</script>
 	</head>
 	<body>
 		<h2>Buriosca.cz - Darwin QPX</h2>
-		<h4>${message}</h4>		
+		<h4>${tables}</h4>
 	</body>
 </html>
