@@ -18,7 +18,7 @@ public class HomeController {
 			view.addObject("tables", DBContext.getTables());
 			/*
 			// SELECT s offsetem
-			List<BasicRecord> data = new SelectDao()
+			List<BasicRecord> data = new DSLSelect()
 				.select("file_store")
 				.where("file_name LIKE ?", "%.png")
 				.orderBy("id", "DESC")
@@ -30,19 +30,19 @@ public class HomeController {
 			BasicRecord rec = new BasicRecord();
 			rec.setString("id", "FS02_00000099");
 			rec.setString("file_name", "novy.png");
-			new InsertDao().insert("file_store").values(rec).execute();
+			new DSLInsert().insert("file_store").values(rec).execute();
 			
 			// UPDATE
 			BasicRecord upd = new BasicRecord();
 			upd.setString("file_name", "upraveny.png");
-			new UpdateDao().update("file_store").set(upd).where("id=?", "FS02_00000099").execute();
+			new DSLUpdate().update("file_store").set(upd).where("id=?", "FS02_00000099").execute();
 			
 			// DELETE
-			new DeleteDao().delete("file_store").where("id=?", "FS02_00000099").execute();	
+			new DSLDelete().delete("file_store").where("id=?", "FS02_00000099").execute();	
 			
 			// ----------------------------------------------------------
 			
-			List<BasicRecord> data = BasicDaoFactory
+			List<BasicRecord> data = DSL
 				.select("id", "file_name")
 				.from("file_store")
 				.where("id=?", "FS02_00000001")
@@ -51,25 +51,32 @@ public class HomeController {
 				.offset(20)
 				.execute();
 
+			List<BasicRecord> data = DSL
+				.select("f.id AS fileId", "f.file_name AS fileName", "u.username AS userName")
+				.from("file_store f")
+				.join("INNER JOIN users u ON f.user_id = u.id")
+				.where("f.id=?", "FS02_00000001")
+				.execute();
+
 			BasicRecord rec = new BasicRecord();
 			rec.setString("id", "FS02_00000100");
 			rec.setString("file_name", "novy.png");
 			
-			BasicDaoFactory.insert("file_store")
+			DSL.insert("file_store")
 				.values(rec)
 				.execute();
 
 			BasicRecord upd = new BasicRecord();
 			upd.setString("file_name", "upraveny.png");
 			
-			BasicDaoFactory.update("file_store")
+			DSL.update("file_store")
 				.set(upd)
 				.where("id=?", "FS02_00000100")
 				.execute();
 
-			BasicDaoFactory.delete("file_store")
+			DSL.delete("file_store")
 				.where("id=?", "FS02_00000100")
-				.execute();    		
+				.execute(); 
 			 */
 		} catch (Exception e) {
 			e.printStackTrace();

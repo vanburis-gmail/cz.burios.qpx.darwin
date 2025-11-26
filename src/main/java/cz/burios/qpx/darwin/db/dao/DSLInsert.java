@@ -7,16 +7,16 @@ import java.util.List;
 
 import cz.burios.qpx.darwin.db.DBContext;
 
-public class InsertDao {
+public class DSLInsert {
 	private String tableName;
 	private BasicRecord values;
 
-	public InsertDao insert(String tableName) {
+	public DSLInsert insert(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
 
-	public InsertDao values(BasicRecord record) {
+	public DSLInsert values(BasicRecord record) {
 		this.values = record;
 		return this;
 	}

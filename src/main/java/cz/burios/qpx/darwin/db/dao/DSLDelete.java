@@ -7,18 +7,18 @@ import java.util.List;
 
 import cz.burios.qpx.darwin.db.DBContext;
 
-public class DeleteDao {
+public class DSLDelete {
 	
 	private String tableName;
 	private String whereClause;
 	private List<Object> whereParams = new ArrayList<>();
 
-	public DeleteDao delete(String tableName) {
+	public DSLDelete delete(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
 
-	public DeleteDao where(String condition, Object... params) {
+	public DSLDelete where(String condition, Object... params) {
 		this.whereClause = condition;
 		this.whereParams.clear();
 		if (params != null) {

@@ -7,23 +7,23 @@ import java.util.List;
 
 import cz.burios.qpx.darwin.db.DBContext;
 
-public class UpdateDao {
+public class DSLUpdate {
 	private String tableName;
 	private BasicRecord values;
 	private String whereClause;
 	private List<Object> whereParams = new ArrayList<>();
 
-	public UpdateDao update(String tableName) {
+	public DSLUpdate update(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
 
-	public UpdateDao set(BasicRecord record) {
+	public DSLUpdate set(BasicRecord record) {
 		this.values = record;
 		return this;
 	}
 
-	public UpdateDao where(String condition, Object... params) {
+	public DSLUpdate where(String condition, Object... params) {
 		this.whereClause = condition;
 		this.whereParams.clear();
 		if (params != null) {
