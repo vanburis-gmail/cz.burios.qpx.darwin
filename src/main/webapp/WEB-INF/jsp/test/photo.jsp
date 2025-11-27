@@ -16,7 +16,7 @@
 		}		
 		</style>
 
-		<script type="text/javascript" src="/buquet/libs/jquery/jquery-3.4.1.js"></script>
+		<script type="text/javascript" src="/buquet/libs/jquery/jquery-3.7.1.js"></script>
 		<script type="text/javascript" src="/buquet/libs/bq/bqPhoto.js?build=${timeNo}"></script>
 	</head>
 	<body>

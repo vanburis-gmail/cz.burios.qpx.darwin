@@ -18,7 +18,7 @@
 		}
 		</style>
 
-		<script type="text/javascript" src="/darwin/libs/jquery/jquery-3.4.1.js"></script>
+		<script type="text/javascript" src="/darwin/libs/jquery/jquery-3.7.1.js"></script>
 
 		<script>
 		</script>
