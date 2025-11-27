@@ -157,26 +157,26 @@
 
 	/*
 	$("#layout").qpx({
-	    direction: "row",
-	    gap: "10px",
-	    data: [
-	        { html: "<strong>Levý panel</strong>", flex: 1 },
-	        { 
-	            layout: {
-	                direction: "column",
-	                gap: "5px",
-	                data: [
-	                    { plugin: "qpWidget", options: { theme: "dark" }, flex: 1 },
-	                    { plugin: "qpNumberEditor", options: { min: 5, max: 20 }, flex: 2 },
-	                    { html: "<em>Spodní část</em>", flex: 1 }
-	                ]
-	            },
-	            flex: 2
-	        }
-	    ],
-	    onresize: function(container){
-	        console.log("Layout byl změněn velikostí okna:", container.width(), container.height());
-	    }
+		direction: "row",
+		gap: "10px",
+		data: [
+			{ html: "<strong>Levý panel</strong>", flex: 1 },
+			{
+				layout: {
+					direction: "column",
+					gap: "5px",
+					data: [
+						{ plugin: "qpWidget", options: { theme: "dark" }, flex: 1 },
+						{ plugin: "qpNumberEditor", options: { min: 5, max: 20 }, flex: 2 },
+						{ html: "<em>Spodní část</em>", flex: 1 }
+					]
+				},
+				flex: 2
+			}
+		],
+		onresize: function(container){
+			console.log("Layout byl změněn velikostí okna:", container.width(), container.height());
+		}
 	});	
 	*/
 })(jQuery);
