@@ -9,7 +9,7 @@
 		<title>Buriosca.cz - Darwin QPX</title>
 
 		<link rel="icon" href="/darwin/favicon.png">
-		<link rel="stylesheet" href="/darwin/libs/jqx/jqx.css" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="/darwin/libs/qpx/qpx-default.css" rel="stylesheet" type="text/css">
 
 		<style type="text/css">
 		html, body {
@@ -19,12 +19,39 @@
 		</style>
 
 		<script type="text/javascript" src="/darwin/libs/jquery/jquery-3.7.1.js"></script>
-
-		<script>
-		</script>
+		<script type="text/javascript" src="/darwin/libs/qpx/jquery.qpx.js"></script>
+		<script type="text/javascript" src="/darwin/libs/qpx/qpToolBar.js"></script>
+		
+		<script></script>
 	</head>
-	<body>
+	<body style="height: 100vh; position: relative;">
+		
+		<div id="myToolbar" class="qp-toolbar" style="width: 100vw"></div>
+		<%--
 		<h2>Buriosca.cz - Darwin QPX</h2>
-		<h4>${tables}</h4>
+		 --%>
+		
+		<script>
+		$("#myToolbar").qpToolBar({
+			  sections: {
+			    left: [
+			      { tag: "button", text: "Home" },
+			      { tag: "button", text: "Back" }
+			    ],
+			    center: [
+			      { tag: "span", text: "Dashboard Dashboard Dashboard Dashboard Dashboard ", class: "title" }
+			    ],
+			    right: [
+			      { tag: "button", text: "Settings" },
+			      { tag: "button", text: "Help" },
+			      { tag: "button", text: "Profile" }
+			    ],
+			    sidebar: [
+			      { tag: "button", text: "Extra Option" }
+			    ]
+			  }
+			});
+
+		</script>
 	</body>
 </html>
