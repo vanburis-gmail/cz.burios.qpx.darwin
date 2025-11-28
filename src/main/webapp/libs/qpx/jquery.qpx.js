@@ -21,6 +21,10 @@
 			var dataOptions = $el.data();
 			var settings = $.extend({}, defaults, dataOptions, options);
 
+			settings.getOptions = function() { return settings; };
+			settings.getOption = function(name) { return settings[name]; };
+			settings.setOption = function(name, value) { settings[name] = value; };
+
 			// Uložení konfigurace do elementu
 			$el.data("qpWidget", settings);
 

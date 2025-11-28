@@ -1,5 +1,6 @@
 package cz.burios.qpx.darwin.controller;
 
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.servlet.ModelAndView;
@@ -15,7 +16,8 @@ public class HomeController {
 	public ModelAndView index() {
 		ModelAndView view = new ModelAndView("index");
 		try {
-			view.addObject("tables", DBContext.getTables());
+			java.util.Date now = new java.util.Date();
+			view.addObject("timeNo", DateFormatUtils.format(now, "yyyyMMdd.HHmmssSSS"));
 			/*
 			// SELECT s offsetem
 			List<BasicRecord> data = new DSLSelect()
