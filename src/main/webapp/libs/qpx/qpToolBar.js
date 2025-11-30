@@ -1,17 +1,65 @@
+/* ============================================================================
+ * PLUGIN: qpWidhet
+ * ============================================================================
+ */
 (function($) {
 	$.fn.qpWidget = function(options) {
-		var settings = $.extend({
+		var defaults = {
+			elementAttr: {},   // např. { "data-role": "qpWidget" }
+			height: null,      // číslo → px, string → CSS
+			width: null,       // číslo → px, string → CSS
+			hint: null,        // text nápovědy
+			tabIndex: null,    // pořadí pro klávesovou navigaci
+			visible: true,     // defaultně viditelné
 			wrapper: null
-		}, options);
+		};
+
+		var settings = $.extend(true, {}, defaults, options);
 
 		return this.each(function() {
 			var $element = $(this);
 			var $wrapper = settings.wrapper ? $(settings.wrapper) : $element;
 
+			// aplikace defaultních vlastností
+			if (settings.elementAttr) {
+				$.each(settings.elementAttr, function(attr, val) {
+					$element.attr(attr, val);
+				});
+			}
+
+			if (settings.height !== null) {
+				if (typeof settings.height === "number") {
+					$element.css("height", settings.height + "px");
+				} else if (typeof settings.height === "string") {
+					$element.css("height", settings.height);
+				}
+			}
+
+			if (settings.width !== null) {
+				if (typeof settings.width === "number") {
+					$element.css("width", settings.width + "px");
+				} else if (typeof settings.width === "string") {
+					$element.css("width", settings.width);
+				}
+			}
+
+			if (settings.hint) {
+				$element.attr("title", settings.hint);
+			}
+
+			if (settings.tabIndex !== null) {
+				$element.attr("tabindex", settings.tabIndex);
+			}
+
+			if (!settings.visible) {
+				$element.hide();
+			}
+
 			var widget = {
 				element: $element,
 				wrapper: $wrapper,
 				options: settings,
+
 				bind: function(event, handler) {
 					this.element.on(event, handler);
 				},
@@ -31,9 +79,12 @@
 					this.element.empty();
 				},
 				setOptions: function(newOptions) {
-					this.options = $.extend(this.options, newOptions);
+					this.options = $.extend(true, this.options, newOptions);
+					// re-aplikace nových options
+					this.element.qpWidget(this.options);
 				}
 			};
+
 			$element.data("qpWidget", widget);
 		});
 	};
@@ -183,7 +234,10 @@
 					$el.append($cell);
 					$cells.push($cell);
 				});
+				$filler = $("qp-datagrid-cell-filler");
+				
 				var $filler = $("<div>").addClass("qp-datagrid-cell-filler");
+				// console.log("$filler: ", $filler);
 				$el.append($filler);
 
 				var $popupBtn = $("<button>").addClass("qp-datagrid-popup-btn").html("&#8942;").hide();
@@ -246,6 +300,8 @@
 			init();
 		});
 	};
+	/*
+	 */
 	$(function() {
 		$("[data-role='qpDataGridRow']").qpDataGridRow();
 	});
@@ -328,9 +384,11 @@
 			init();
 		});
 	};
+	/*
 	$(function() {
 		$("[data-role='qpDataGridRow']").qpDataGridRow();
 	});
+	*/
 })(jQuery);
 
 /* ============================================================================
@@ -340,11 +398,11 @@
 (function($) {
 	$.fn.qpTabs = function(options) {
 		return this.each(function() {
-			// inicializace jako qpWidget
+			// inicializace jako qpWidget → propíše defaultní vlastnosti
 			$(this).qpWidget(options);
 			var widget = $(this).data("qpWidget");
+
 			var settings = $.extend({
-				height: null,
 				items: [],
 				onSelect: null,
 				onClose: null,
@@ -353,14 +411,9 @@
 
 			var $container = widget.element.addClass("qp-tabs");
 
-			// Nastavení výšky
-			if (settings.height !== null) {
-				if (typeof settings.height === "number") {
-					$container.css("height", settings.height + "px");
-				} else if (typeof settings.height === "string") {
-					$container.css("height", settings.height);
-				}
-			}
+			// výška/šířka/hint/tabIndex/visible už aplikoval qpWidget
+			// takže tady jen doplníme logiku záložek
+
 			var $tabHeader = $("<ul>").addClass("qp-tabs-header");
 			var $tabContent = $("<div>").addClass("qp-tabs-content");
 
@@ -383,6 +436,7 @@
 						});
 					$tab.append($close);
 				}
+
 				$tab.on("click", function() {
 					$tabHeader.find(".active").removeClass("active");
 					$(this).addClass("active");
@@ -408,11 +462,7 @@
 
 					$content.append($widgetDiv);
 
-					// inicializace widgetu podle role
-					console.log("widgetDiv: ", $widgetDiv);
-					console.log("item.content.role: ", item.content.role);
 					if (item.content.role === "qpDataGrid" && typeof $widgetDiv.qpDataGrid === "function") {
-						console.log("item.content.options: ", item.content.options);
 						$widgetDiv.qpDataGrid(item.content.options || {});
 					}
 
