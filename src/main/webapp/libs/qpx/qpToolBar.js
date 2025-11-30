@@ -1,353 +1,434 @@
-(function($){
+(function($) {
+	$.fn.qpWidget = function(options) {
+		var settings = $.extend({
+			wrapper: null
+		}, options);
 
-  // Základní předek: qpWidget
-  $.fn.qpWidget = function(optionsOrMethod){
-    return this.each(function(){
-      var $el = $(this);
+		return this.each(function() {
+			var $element = $(this);
+			var $wrapper = settings.wrapper ? $(settings.wrapper) : $element;
 
-      if(typeof optionsOrMethod === "string"){
-        var method  = optionsOrMethod;
-        var settings = $el.data("qpWidget");
-
-        if(method === "destroy"){
-          var ro = $el.data("qpWidgetResizeObserver");
-          if(ro){ ro.disconnect(); $el.removeData("qpWidgetResizeObserver"); }
-          $el.removeData("qpWidget");
-          $el.removeClass(function(i, cls){
-            return (cls.match(/(^|\s)qp-widget-\S+/g) || []).join(' ');
-          });
-        }
-        return;
-      }
-
-      var defaults = {
-        enabled: true,
-        theme: "default",
-        onResize: null
-      };
-      var settings = $.extend({}, defaults, $el.data(), optionsOrMethod);
-
-      settings.getOptions = function(){ return settings; };
-      settings.getOption  = function(name){ return settings[name]; };
-      settings.setOption  = function(name, value){ settings[name] = value; };
-
-      $el.data("qpWidget", settings);
-
-      function init(){
-        if(settings.enabled){
-          $el.addClass("qp-widget qp-widget-" + settings.theme);
-        }
-        if(typeof settings.onResize === "function"){
-          var ro = new ResizeObserver(function(entries){
-            entries.forEach(function(entry){
-              settings.onResize.call($el, entry.contentRect);
-            });
-          });
-          ro.observe($el[0]);
-          $el.data("qpWidgetResizeObserver", ro);
-        }
-      }
-      init();
-    });
-  };
-
-  // Autodetekce
-  $(function(){
-    // $("[data-role='qpToolBar']").qpToolBar();
-    $("[data-role='qpWidget']").qpWidget();
-  });
-
+			var widget = {
+				element: $element,
+				wrapper: $wrapper,
+				options: settings,
+				bind: function(event, handler) {
+					this.element.on(event, handler);
+				},
+				unbind: function(event) {
+					this.element.off(event);
+				},
+				trigger: function(event, data) {
+					this.element.trigger(event, data);
+				},
+				resize: function() {
+					var h = this.element.outerHeight();
+					this.wrapper.css("height", h + "px");
+				},
+				destroy: function() {
+					this.unbind();
+					this.element.removeData("qpWidget");
+					this.element.empty();
+				},
+				setOptions: function(newOptions) {
+					this.options = $.extend(this.options, newOptions);
+				}
+			};
+			$element.data("qpWidget", widget);
+		});
+	};
 })(jQuery);
 
-// ============================================================================
-// PLUGIN
-// ============================================================================
-(function($){
+/* ============================================================================
+ * PLUGIN: qpToolbar
+ * ============================================================================
+ */
+(function($) {
+	$.fn.qpToolbar = function(optionsOrMethod) {
+		return this.each(function() {
+			var $el = $(this);
 
-    $.fn.qpDataGridRow = function(optionsOrMethod){
-        return this.each(function(){
-            var $el = $(this);
+			var defaults = {
+				items: [],       // [{ html:"<button>OK</button>" }, { widget: {...} }]
+				responsive: false
+			};
 
-            var defaults = {
-                columns: [],
-                data: {},
-                responsive: false
-            };
+			var settings = $.extend(true, {}, defaults, optionsOrMethod);
+			$el.data("qpToolbar", settings);
 
-            var settings = $.extend(true, {}, defaults, optionsOrMethod);
-            $el.data("qpDataGridRow", settings);
+			function init() {
+				$el.addClass("qp-toolbar").css({
+					display: "flex",
+					flexDirection: "row",
+					alignItems: "center",
+					position: "relative",
+					width: "100%"
+				});
 
-            function init(){
-                $el.addClass("qp-datagrid-row");
+				var $items = [];
+				settings.items.forEach(function(item) {
+					var $cell = $("<div>").addClass("qp-toolbar-item");
 
-                var $cells = [];
-                settings.columns.forEach(function(col){
-                    var $cell = $("<div>").addClass("qp-datagrid-cell");
+					if (item.html) {
+						$cell.html(item.html);
+					}
+					if (item.widget) {
+						// inicializace widgetu
+						$cell.qpWidget(item.widget);
+					}
 
-                    if(col.width){
-                        if(col.width.indexOf("px")>-1){
-                            $cell.css({ width: col.width, flex:"0 0 "+col.width });
-                        } else if(col.width.indexOf("%")>-1){
-                            $cell.css({ width: col.width, flex:"0 0 "+col.width });
-                        } else {
-                            $cell.css({ flex:"0 0 auto" });
-                        }
-                    } else {
-                        $cell.css({ flex:"0 0 auto" });
-                    }
+					$el.append($cell);
+					$items.push($cell);
+				});
 
-                    var val = settings.data[col.field] || "";
-                    $cell.text(val);
+				// popup button + popup
+				var $popupBtn = $("<button>").addClass("qp-toolbar-popup-btn").html("&#8942;").hide();
+				var $popup = $("<div>").addClass("qp-toolbar-popup");
+				$("body").append($popup); // plovoucí div mimo toolbar
+				$el.append($popupBtn);
 
-                    $el.append($cell);
-                    $cells.push($cell);
-                });
+				$popupBtn.on("click", function(e) {
+					e.stopPropagation();
+					var offset = $el.offset();
+					$popup.css({
+						top: offset.top + $el.outerHeight(),
+						left: offset.left,
+						minWidth: $el.outerWidth()
+					}).toggle();
+				});
 
-                var $filler = $("<div>").addClass("qp-datagrid-cell-filler");
-                $el.append($filler);
+				$(document).on("click", function() {
+					$popup.hide();
+				});
 
-                var $popupBtn = $("<button>").addClass("qp-datagrid-popup-btn").html("&#8942;").hide();
-                var $popup = $("<div>").addClass("qp-datagrid-popup");
-                $el.append($popupBtn).append($popup);
+				if (settings.responsive) {
+					var ro = new ResizeObserver(function() {
+						var availableWidth = $el.width() - $popupBtn.outerWidth();
+						var usedWidth = 0;
 
-                $popupBtn.on("click", function(){
-                    $popup.toggle();
-                });
+						$popup.empty();
+						$items.forEach(function($c) { $c.show(); });
 
-                if(settings.responsive){
-                    var ro = new ResizeObserver(function(){
-                        var availableWidth = $el.width() - $popupBtn.outerWidth();
-                        var usedWidth = 0;
+						settings.items.forEach(function(item, idx) {
+							var $c = $items[idx];
+							var w = $c.outerWidth(true);
+							if (usedWidth + w <= availableWidth) {
+								usedWidth += w;
+							} else {
+								$c.hide();
+								var $clone = $c.clone(true, true);
+								$clone.css({
+									display: "flex",
+									width: "100%",
+									justifyContent: "flex-start"
+								});
+								$popup.append($clone);
+							}
+						});
 
-                        $popup.empty();
-                        $cells.forEach(function($c){ $c.show(); });
+						if ($popup.children().length > 0) {
+							$popupBtn.show();
+						} else {
+							$popupBtn.hide();
+							$popup.hide();
+						}
+					});
+					ro.observe($el[0]);
+				}
+			}
 
-                        // znovu spočítáme
-                        settings.columns.forEach(function(col, idx){
-                            var $c = $cells[idx];
-                            var w = $c.outerWidth(true);
-                            if(usedWidth + w <= availableWidth){
-                                usedWidth += w;
-                            } else {
-                                $c.hide();
-                            }
-                        });
+			init();
+		});
+	};
+})(jQuery);
 
-                        // naplníme popup podle pořadí columns
-                        settings.columns.forEach(function(col, idx){
-                            var $c = $cells[idx];
-                            if($c.is(":hidden")){
-                                var val = settings.data[col.field] || "";
-                                var $popupItem = $("<div>").addClass("qp-datagrid-popup-item");
+/* ============================================================================
+ * PLUGIN: qpDataGridRow
+ * ============================================================================
+ */
+(function($) {
+	$.fn.qpDataGridRow = function(options) {
+		return this.each(function() {
+			$(this).qpWidget(options);
+			var widget = $(this).data("qpWidget");
+			var $el = widget.element;
+			var defaults = {
+				columns: [],
+				data: {},
+				responsive: false
+			};
+			var settings = $.extend(true, {}, defaults, widget.options );
+			$el.data("qpDataGridRow", settings);
+			/*
+			*/
+			function init() {
+				$el.addClass("qp-datagrid-row");
+				var $cells = [];
+				settings.columns.forEach(function(col) {
+					var $cell = $("<div>").addClass("qp-datagrid-cell");
 
-                                if(col.label){
-                                    var $label = $("<div>").addClass("qp-datagrid-popup-label").text(col.label);
-                                    $popupItem.append($label);
-                                }
+					if (col.width) {
+						if (col.width.indexOf("px") > -1) {
+							$cell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else if (col.width.indexOf("%") > -1) {
+							$cell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else {
+							$cell.css({ flex: "0 0 auto" });
+						}
+					} else {
+						$cell.css({ flex: "0 0 auto" });
+					}
+					var val = settings.data[col.field] || "";
+					$cell.text(val);
+					$el.append($cell);
+					$cells.push($cell);
+				});
+				var $filler = $("<div>").addClass("qp-datagrid-cell-filler");
+				$el.append($filler);
 
-                                var $value = $("<div>").addClass("qp-datagrid-popup-value").text(val);
-                                $popupItem.append($value);
+				var $popupBtn = $("<button>").addClass("qp-datagrid-popup-btn").html("&#8942;").hide();
+				var $popup = $("<div>").addClass("qp-datagrid-popup");
+				$el.append($popupBtn);
+				$el.after($popup);
 
-                                $popup.append($popupItem);
-                            }
-                        });
+				$popupBtn.on("click", function() {
+					$popup.toggle();
+				});
+				if (settings.responsive) {
+					var ro = new ResizeObserver(function() {
+						var availableWidth = $el.width() - $popupBtn.outerWidth();
+						var usedWidth = 0;
 
-                        if($popup.children().length > 0){
-                            $popupBtn.show();
-                        } else {
-                            $popupBtn.hide();
-                            $popup.hide();
-                        }
+						$popup.empty();
+						$cells.forEach(function($c) { $c.show(); });
 
-                        // aktualizace min-height popupu podle výšky řádku
-                        var rowHeight = $el.outerHeight();
-                        $popup.css("--row-height", rowHeight + "px");
-                    });
-                    ro.observe($el[0]);
-                }
-            }
+						// znovu spočítáme
+						settings.columns.forEach(function(col, idx) {
+							var $c = $cells[idx];
+							var w = $c.outerWidth(true);
+							if (usedWidth + w <= availableWidth) {
+								usedWidth += w;
+							} else {
+								$c.hide();
+							}
+						});
+						// naplníme popup podle pořadí columns
+						settings.columns.forEach(function(col, idx) {
+							var $c = $cells[idx];
+							if ($c.is(":hidden")) {
+								var val = settings.data[col.field] || "";
+								var $popupItem = $("<div>").addClass("qp-datagrid-popup-item");
+								if (col.label) {
+									var $label = $("<div>").addClass("qp-datagrid-popup-label").text(col.label);
+									$popupItem.append($label);
+								}
 
-            init();
-        });
-    };
-	$(function(){
-	  // $("[data-role='qpToolBar']").qpToolBar();
-	  $("[data-role='qpWidget']").qpWidget();
+								var $value = $("<div>").addClass("qp-datagrid-popup-value").text(val);
+								$popupItem.append($value);
+
+								$popup.append($popupItem);
+							}
+						});
+						if ($popup.children().length > 0) {
+							$popupBtn.show();
+						} else {
+							$popupBtn.hide();
+							$popup.hide();
+						}
+
+						// aktualizace min-height popupu podle výšky řádku
+						var rowHeight = $el.outerHeight();
+						$popup.css("--row-height", rowHeight + "px");
+					});
+					ro.observe($el[0]);
+				}
+			}
+			init();
+		});
+	};
+	$(function() {
+		$("[data-role='qpDataGridRow']").qpDataGridRow();
 	});
-})(jQuery);	
-
-
-// ============================================================================
-//
-// ============================================================================
-
-(function($){
-
-    $.fn.qpToolbar = function(optionsOrMethod){
-        return this.each(function(){
-            var $el = $(this);
-
-            var defaults = {
-                items: [],       // [{ html:"<button>OK</button>" }, { widget: {...} }]
-                responsive: false
-            };
-
-            var settings = $.extend(true, {}, defaults, optionsOrMethod);
-            $el.data("qpToolbar", settings);
-
-            function init(){
-                $el.addClass("qp-toolbar").css({
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center",
-                    position: "relative",
-                    width: "100%"
-                });
-
-                var $items = [];
-                settings.items.forEach(function(item){
-                    var $cell = $("<div>").addClass("qp-toolbar-item");
-
-                    if(item.html){
-                        $cell.html(item.html);
-                    }
-                    if(item.widget){
-                        // inicializace widgetu
-                        $cell.qpWidget(item.widget);
-                    }
-
-                    $el.append($cell);
-                    $items.push($cell);
-                });
-
-                // popup button + popup
-                var $popupBtn = $("<button>").addClass("qp-toolbar-popup-btn").html("&#8942;").hide();
-                var $popup = $("<div>").addClass("qp-toolbar-popup");
-                $("body").append($popup); // plovoucí div mimo toolbar
-                $el.append($popupBtn);
-
-                $popupBtn.on("click", function(e){
-                    e.stopPropagation();
-                    var offset = $el.offset();
-                    $popup.css({
-                        top: offset.top + $el.outerHeight(),
-                        left: offset.left,
-                        minWidth: $el.outerWidth()
-                    }).toggle();
-                });
-
-                $(document).on("click", function(){
-                    $popup.hide();
-                });
-
-                if(settings.responsive){
-                    var ro = new ResizeObserver(function(){
-                        var availableWidth = $el.width() - $popupBtn.outerWidth();
-                        var usedWidth = 0;
-
-                        $popup.empty();
-                        $items.forEach(function($c){ $c.show(); });
-
-                        settings.items.forEach(function(item, idx){
-                            var $c = $items[idx];
-                            var w = $c.outerWidth(true);
-                            if(usedWidth + w <= availableWidth){
-                                usedWidth += w;
-                            } else {
-                                $c.hide();
-                                var $clone = $c.clone(true,true);
-                                $clone.css({
-                                    display: "flex",
-                                    width: "100%",
-                                    justifyContent: "flex-start"
-                                });
-                                $popup.append($clone);
-                            }
-                        });
-
-                        if($popup.children().length > 0){
-                            $popupBtn.show();
-                        } else {
-                            $popupBtn.hide();
-                            $popup.hide();
-                        }
-                    });
-                    ro.observe($el[0]);
-                }
-            }
-
-            init();
-        });
-    };
-
 })(jQuery);
 
-// ============================================================================
-// PLUGIN
-// ============================================================================
-(function($){
+/* ============================================================================
+ * PLUGIN: qpDataGrid
+ * ============================================================================
+ */
+(function($) {
+	$.fn.qpDataGrid = function(options) {
+		return this.each(function() {
+			// var $el = $(this);
+			$(this).qpWidget(options);
+			var widget = $(this).data("qpWidget");
+			var $el = widget.element;
+			var defaults = {
+				columns: [],
+				data: [],
+				height: null,
+				responsive: false
+			};
+			var settings = $.extend(true, {}, defaults, widget.options );
+			$el.data("qpDataGrid", settings);
+			/*
+			 */
+			function init() {
+				$el.addClass("qp-datagrid");
+				if (settings.height !== null) {
+					if (typeof settings.height === "number") {
+						// číslo → px
+						$el.css("height", settings.height + "px");
+					} else if (typeof settings.height === "string") {
+						// string → přímo CSS hodnota
+						$el.css("height", settings.height);
+					}
+				}
+				// header
+				var $header = $("<div>").addClass("qp-datagrid-header");
+				settings.columns.forEach(function(col) {
+					var $hcell = $("<div>").addClass("qp-datagrid-header-cell");
+					$hcell.text(col.label || col.field);
+					if (col.width) {
+						if (col.width.indexOf("px") > -1) {
+							$hcell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else if (col.width.indexOf("%") > -1) {
+							$hcell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else {
+							$hcell.css({ flex: "0 0 auto" });
+						}
+					} else {
+						$hcell.css({ flex: "0 0 auto" });
+					}
+					$header.append($hcell);
+				});
+				$el.append($header);
 
-    $.fn.qpDataGrid = function(optionsOrMethod){
-        return this.each(function(){
-            var $el = $(this);
-
-            var defaults = {
-                columns: [],
-                rows: [],
-                height: 300,
-                responsive: false
-            };
-
-            var settings = $.extend(true, {}, defaults, optionsOrMethod);
-            $el.data("qpDataGrid", settings);
-
-            function init(){
-                $el.addClass("qp-datagrid").css({
-                    height: settings.height
-                });
-
-                // header
-                var $header = $("<div>").addClass("qp-datagrid-header");
-                settings.columns.forEach(function(col){
-                    var $hcell = $("<div>").addClass("qp-datagrid-header-cell");
-                    $hcell.text(col.label || col.field);
-                    if(col.width){
-                        if(col.width.indexOf("px")>-1){
-                            $hcell.css({ width: col.width, flex:"0 0 "+col.width });
-                        } else if(col.width.indexOf("%")>-1){
-                            $hcell.css({ width: col.width, flex:"0 0 "+col.width });
-                        } else {
-                            $hcell.css({ flex:"0 0 auto" });
-                        }
-                    } else {
-                        $hcell.css({ flex:"0 0 auto" });
-                    }
-                    $header.append($hcell);
-                });
-                $el.append($header);
-
-                // body
-                var $body = $("<div>").addClass("qp-datagrid-body");
-                $el.append($body);
-
-                settings.rows.forEach(function(rowData){
-                    var $row = $("<div>").attr("data-role","qpDataGridRow");
-                    $body.append($row);
-                    $row.qpDataGridRow({
-                        columns: settings.columns,
-                        data: rowData,
-                        responsive: settings.responsive
-                    });
-                });
-
-                // pokud není responsive → horizontální scroll
-                if(!settings.responsive){
-                    $body.addClass("scroll-x");
-                }
-            }
-
-            init();
-        });
-    };
-
+				// body
+				var $body = $("<div>").addClass("qp-datagrid-body");
+				$el.append($body);
+				if (!settings.respoksile) {
+					widget.wrapper.css({
+						"overflow-x": "aotu"
+					});
+				}
+				settings.data.forEach(function(rowData) {
+					var $row = $("<div>").attr("data-role", "qpDataGridRow");
+					$body.append($row);
+					$row.qpDataGridRow({
+						columns: settings.columns,
+						data: rowData,
+						responsive: settings.responsive
+					});
+				});
+				// pokud není responsive → horizontální scroll
+				if (!settings.responsive) {
+					$body.addClass("scroll-x");
+				}
+			}
+			init();
+		});
+	};
+	$(function() {
+		$("[data-role='qpDataGridRow']").qpDataGridRow();
+	});
 })(jQuery);
+
+/* ============================================================================
+ * PLUGIN: qpTabs
+ * ============================================================================
+ */
+(function($) {
+	$.fn.qpTabs = function(options) {
+		return this.each(function() {
+			// inicializace jako qpWidget
+			$(this).qpWidget(options);
+			var widget = $(this).data("qpWidget");
+			var settings = $.extend({
+				height: null,
+				items: [],
+				onSelect: null,
+				onClose: null,
+				onInitWidget: null
+			}, widget.options);
+
+			var $container = widget.element.addClass("qp-tabs");
+
+			// Nastavení výšky
+			if (settings.height !== null) {
+				if (typeof settings.height === "number") {
+					$container.css("height", settings.height + "px");
+				} else if (typeof settings.height === "string") {
+					$container.css("height", settings.height);
+				}
+			}
+			var $tabHeader = $("<ul>").addClass("qp-tabs-header");
+			var $tabContent = $("<div>").addClass("qp-tabs-content");
+
+			$.each(settings.items, function(index, item) {
+				var $tab = $("<li>")
+					.addClass("qp-tab")
+					.text(item.label);
+
+				if (item.closable) {
+					var $close = $("<span>")
+						.addClass("qp-tab-close")
+						.html("&times;")
+						.on("click", function(e) {
+							e.stopPropagation();
+							$tab.remove();
+							$tabContent.children().eq(index).remove();
+							if (typeof settings.onClose === "function") {
+								settings.onClose(index, item);
+							}
+						});
+					$tab.append($close);
+				}
+				$tab.on("click", function() {
+					$tabHeader.find(".active").removeClass("active");
+					$(this).addClass("active");
+					$tabContent.children().hide().eq(index).show();
+					if (typeof settings.onSelect === "function") {
+						settings.onSelect(index, item);
+					}
+				});
+
+				$tabHeader.append($tab);
+
+				var $content = $("<div>")
+					.addClass("qp-tab-body")
+					.attr("id", item.content.id || ("tab-content-" + index))
+					.hide();
+
+				if (item.content.type === "html") {
+					$content.html(item.content.html || "");
+				} else if (item.content.type === "widget") {
+					var $widgetDiv = $("<div>")
+						.attr("id", item.content.id)
+						.attr("data-role", item.content.role);
+
+					$content.append($widgetDiv);
+
+					// inicializace widgetu podle role
+					console.log("widgetDiv: ", $widgetDiv);
+					console.log("item.content.role: ", item.content.role);
+					if (item.content.role === "qpDataGrid" && typeof $widgetDiv.qpDataGrid === "function") {
+						console.log("item.content.options: ", item.content.options);
+						$widgetDiv.qpDataGrid(item.content.options || {});
+					}
+
+					if (typeof settings.onInitWidget === "function") {
+						settings.onInitWidget(index, item, $widgetDiv);
+					}
+				}
+
+				$tabContent.append($content);
+			});
+
+			$tabHeader.find("li").first().addClass("active");
+			$tabContent.children().first().show();
+
+			$container.append($tabHeader).append($tabContent);
+		});
+	};
+})(jQuery);
+
