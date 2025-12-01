@@ -312,13 +312,11 @@
  * ============================================================================
  */
 (function($) {
-
 	$.fn.qpDataGrid = function(options) {
 		return this.each(function() {
 			$(this).qpWidget(options);
 			var widget = $(this).data("qpWidget");
 			var $el = widget.element;
-
 			var defaults = {
 				columns: [],
 				dataSource: { data: [], fetch: null },
@@ -340,7 +338,7 @@
 
 				settings.columns.forEach(function(col) {
 					var $hcell = $("<div>").addClass("qp-datagrid-header-cell");
-					$hcell.text(col.label || col.field);
+					// $hcell.text(col.label || col.field);
 					if (col.width) {
 						if (col.width.indexOf("px") > -1) {
 							$hcell.css({ width: col.width, flex: "0 0 " + col.width });
@@ -352,6 +350,36 @@
 					} else {
 						$hcell.css({ flex: "0 0 auto" });
 					}
+					// text názvu
+					var $label = $("<div>").addClass("qp-datagrid-header-label").text(col.label);
+					$hcell.append($label);
+
+					// ikonka pro řazení
+					var $sortIcon = $("<div>")
+						.addClass("qp-datagrid-header-sort-icon")
+						.html("⇅")
+						.on("click", function(e) {
+							e.stopPropagation();
+							var $cell = $(e.target);
+							var state = $cell.data("sortState");
+							var newState;
+							if (state === "none") newState = "asc";
+							else if (state === "asc") newState = "desc";
+							else newState = "none";
+							
+							$cell.data("sortState", newState);
+							
+							// změna ikony podle stavu
+							if (newState === "asc") {
+								$cell.html("↑");
+							} else if (newState === "desc") {
+								$cell.html("↓");
+							} else {
+								$cell.html("⇅");
+							}
+																					
+						});
+					$hcell.append($sortIcon);	
 					$header.append($hcell);
 				});
 				return $headerWrapper;
@@ -421,7 +449,6 @@
 						responsive: settings.responsive
 					});
 				});
-
 				if (rowsBatch.length > 0) {
 					currentPage++;
 				}
@@ -441,7 +468,6 @@
 						await loadRows();
 					}
 				});
-
 				// synchronizace horizontálního scrollu (responsive:false)
 				if (!settings.responsive) {
 					$body.on("scroll", function() {
@@ -449,11 +475,9 @@
 					});
 				}
 			}
-
 			init();
 		});
 	};
-
 })(jQuery);
 
 /*

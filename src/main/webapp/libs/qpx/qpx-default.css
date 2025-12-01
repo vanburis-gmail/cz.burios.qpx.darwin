@@ -317,19 +317,38 @@ img {
 	width: 100%;
 	overflow: hidden;
 }
-
 .qp-datagrid-header-wrapper {
-	overflow-x: hidden; /* zabrání dvojitému scrollu */
+	overflow: hidden; /* zabrání dvojitému scrollu */
 }
-
 .qp-datagrid-header {
 	display: flex;
 	position: sticky;
 	top: 0;
 	background: #f5f5f5;
 	z-index: 10;
+	height: 3em;
 }
-
+.qp-datagrid-header-label {
+	flex: 1 1 auto;
+	padding: 0 8px;
+}
+.qp-datagrid-header-sort-icon {
+	font-size: 14px;
+	color: #666;
+	padding: 4px;
+	flex: 0 0 12px;
+	cursor: pointer;
+	padding: 8px;
+	
+}
+.qp-datagrid-header-sort-icon:hover {
+	color: #000;
+}
+.qp-datagrid-header-cell {
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
 .qp-datagrid-body {
 	flex: 1 1 auto;
 	overflow-y: auto;

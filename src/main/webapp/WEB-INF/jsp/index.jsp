@@ -72,7 +72,7 @@
 		<script>
 		$("#grid").qpDataGrid({
 			height: "33%",
-			responsive: false,
+			responsive: true,
 			columns: [
 				{ field: "id", label: "ID", width: "50px" },
 				{ field: "name", label: "Jméno", width: "200px" },
