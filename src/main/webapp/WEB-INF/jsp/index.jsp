@@ -80,15 +80,28 @@
 				{ field: "email", label: "Email", width: "30%" },
 				{ field: "phone", label: "Telefon", width: "150px" }
 			],
-			data: [
-				{ id: 1, name: "Jan Novák", age: 30, email: "jan.novak@example.com", phone: "+420 777 123 456" },
-				{ id: 2, name: "Petr Svoboda", age: 25, email: "petr.svoboda@example.com", phone: "+420 603 854 221" },
-				{ id: 3, name: "Pavel Dvořák", age: 25, email: "pavel.dvorak@example.com", phone: "+420 606 654 731" },
-				{ id: 4, name: "Jiří Chalupa", age: 25, email: "jiri.chalupa@example.com", phone: "+420 732 654 121" },
-				{ id: 6, name: "Miroslav Jeřábek", age: 25, email: "miroslav.jerabek@example.com", phone: "+420 721 654 561" },
-				{ id: 7, name: "Milena Svobodová", age: 25, email: "milena.svobodovaá@example.com", phone: "+420 604 644 831" },
-				{ id: 5, name: "Eva Malá", age: 28, email: "eva.mala@example.com", phone: "+420 777 111 222" }
-			]
+			dataSource: {
+				data: [
+					{ id: 1, name: "Jan Novák", age: 30, email: "jan.novak@example.com", phone: "+420 777 123 456" },
+					{ id: 2, name: "Petr Svoboda", age: 25, email: "petr.svoboda@example.com", phone: "+420 603 854 221" },
+					{ id: 3, name: "Pavel Dvořák", age: 25, email: "pavel.dvorak@example.com", phone: "+420 606 654 731" },
+					{ id: 4, name: "Jiří Chalupa", age: 25, email: "jiri.chalupa@example.com", phone: "+420 732 654 121" },
+					{ id: 6, name: "Miroslav Jeřábek", age: 25, email: "miroslav.jerabek@example.com", phone: "+420 721 654 561" },
+					{ id: 7, name: "Milena Svobodová", age: 25, email: "milena.svobodovaá@example.com", phone: "+420 604 644 831" },
+					{ id: 5, name: "Eva Malá", age: 28, email: "eva.mala@example.com", phone: "+420 777 111 222" }
+				]
+			}
+			/*
+			dataSource: {
+				fetch: function(page, pageSize){
+					return $.ajax({
+						url: "/api/data",
+						method: "GET",
+						data: { page: page, size: pageSize }
+					});
+				}
+			}			
+			 */
 		});
 		</script>
 		<%-- 

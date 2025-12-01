@@ -234,20 +234,20 @@
 					$el.append($cell);
 					$cells.push($cell);
 				});
-				$filler = $("qp-datagrid-cell-filler");
+				if ($el.find(".qp-datagrid-cell-filler").length === 0) {
+					var $filler = $("<div>").addClass("qp-datagrid-cell-filler");
+					$el.append($filler);
+				}
+				if ($el.find(".qp-datagrid-popup-btn").length === 0) {
+					var $popupBtn = $("<button>").addClass("qp-datagrid-popup-btn").html("&#8942;").hide();
+					var $popup = $("<div>").addClass("qp-datagrid-popup");
+					$el.append($popupBtn);
+					$popupBtn.on("click", function() {
+						$popup.toggle();
+					});
+					$el.after($popup);
+				}
 				
-				var $filler = $("<div>").addClass("qp-datagrid-cell-filler");
-				// console.log("$filler: ", $filler);
-				$el.append($filler);
-
-				var $popupBtn = $("<button>").addClass("qp-datagrid-popup-btn").html("&#8942;").hide();
-				var $popup = $("<div>").addClass("qp-datagrid-popup");
-				$el.append($popupBtn);
-				$el.after($popup);
-
-				$popupBtn.on("click", function() {
-					$popup.toggle();
-				});
 				if (settings.responsive) {
 					var ro = new ResizeObserver(function() {
 						var availableWidth = $el.width() - $popupBtn.outerWidth();
@@ -312,6 +312,152 @@
  * ============================================================================
  */
 (function($) {
+
+	$.fn.qpDataGrid = function(options) {
+		return this.each(function() {
+			$(this).qpWidget(options);
+			var widget = $(this).data("qpWidget");
+			var $el = widget.element;
+
+			var defaults = {
+				columns: [],
+				dataSource: { data: [], fetch: null },
+				height: 300,
+				responsive: false,
+				pageSize: 20
+			};
+			var settings = $.extend(true, {}, defaults, widget.options );
+			$el.data("qpDataGrid", settings);
+
+			var currentPage = 0;
+			var $body, $overlay;
+			//
+			function renderHeader() {
+				var $headerWrapper = $("<div>").addClass("qp-datagrid-header-wrapper");
+				var $header = $("<div>").addClass("qp-datagrid-header");
+				$headerWrapper.append($header);
+				$el.append($headerWrapper);
+
+				settings.columns.forEach(function(col) {
+					var $hcell = $("<div>").addClass("qp-datagrid-header-cell");
+					$hcell.text(col.label || col.field);
+					if (col.width) {
+						if (col.width.indexOf("px") > -1) {
+							$hcell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else if (col.width.indexOf("%") > -1) {
+							$hcell.css({ width: col.width, flex: "0 0 " + col.width });
+						} else {
+							$hcell.css({ flex: "0 0 auto" });
+						}
+					} else {
+						$hcell.css({ flex: "0 0 auto" });
+					}
+					$header.append($hcell);
+				});
+				return $headerWrapper;
+			}
+
+			function renderBody() {
+				$body = $("<div>").addClass("qp-datagrid-body");
+				$el.append($body);
+
+				// overlay pro loading
+				$overlay = $("<div>")
+					.addClass("qp-datagrid-overlay")
+					.css({
+						position: "absolute",
+						top: $body.position().top,
+						left: $body.position().left,
+						width: "100%",
+						height: settings.height - $body.position().top,
+						background: "#fff",
+						opacity: 0.5,
+						display: "none",
+						alignItems: "center",
+						justifyContent: "center",
+						zIndex: 100
+					})
+					.text("Loading...");
+				$el.append($overlay);
+
+				if (!settings.responsive) {
+					$body.addClass("scroll-x");
+				}
+				return $body;
+			}
+
+			function showOverlay() { $overlay.show(); }
+			function hideOverlay() { $overlay.hide(); }
+
+			async function loadRows() {
+				let rowsBatch = [];
+
+				if (settings.dataSource.fetch) {
+					showOverlay();
+					try {
+						rowsBatch = await settings.dataSource.fetch(currentPage, settings.pageSize);
+					} catch (e) {
+						console.error("Data fetch error", e);
+					}
+					hideOverlay();
+				} else if (settings.dataSource.data) {
+					// pokud je dataSource.data JSON pole objektů
+					if (Array.isArray(settings.dataSource.data)) {
+						rowsBatch = settings.dataSource.data.slice(
+							currentPage * settings.pageSize,
+							(currentPage + 1) * settings.pageSize
+						);
+					} else {
+						console.error("dataSource.data musí být pole objektů (JSON).");
+					}
+				}
+
+				rowsBatch.forEach(function(rowData) {
+					var $row = $("<div>").attr("data-role", "qpDataGridRow");
+					$body.append($row);
+					$row.qpDataGridRow({
+						columns: settings.columns,
+						data: rowData,
+						responsive: settings.responsive
+					});
+				});
+
+				if (rowsBatch.length > 0) {
+					currentPage++;
+				}
+			}
+
+			function init() {
+				$el.addClass("qp-datagrid").css({ height: settings.height, position: "relative" });
+				var $headerWrapper = renderHeader();
+				renderBody();
+
+				// první dávka řádků
+				loadRows();
+
+				// lazy load při scrollování
+				$body.on("scroll", async function() {
+					if ($body.scrollTop() + $body.innerHeight() >= $body[0].scrollHeight - 10) {
+						await loadRows();
+					}
+				});
+
+				// synchronizace horizontálního scrollu (responsive:false)
+				if (!settings.responsive) {
+					$body.on("scroll", function() {
+						$headerWrapper.scrollLeft($body.scrollLeft());
+					});
+				}
+			}
+
+			init();
+		});
+	};
+
+})(jQuery);
+
+/*
+(function($) {
 	$.fn.qpDataGrid = function(options) {
 		return this.each(function() {
 			// var $el = $(this);
@@ -326,8 +472,7 @@
 			};
 			var settings = $.extend(true, {}, defaults, widget.options );
 			$el.data("qpDataGrid", settings);
-			/*
-			 */
+			//
 			function init() {
 				$el.addClass("qp-datagrid");
 				if (settings.height !== null) {
@@ -384,12 +529,12 @@
 			init();
 		});
 	};
-	/*
+
 	$(function() {
 		$("[data-role='qpDataGridRow']").qpDataGridRow();
 	});
-	*/
 })(jQuery);
+*/
 
 /* ============================================================================
  * PLUGIN: qpTabs
