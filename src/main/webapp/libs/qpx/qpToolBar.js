@@ -310,6 +310,8 @@
 /* ============================================================================
  * PLUGIN: qpDataGrid
  * ============================================================================
+ * 
+ * qpDataGridRow je stejně jako hlavičk sloupcu qpDataGris jsou divy s display:flex a bunkami sloupcu div, kde šířka jedotlivých sloupců je zadana v optons.columns:width a to buď jako čislo (počet px) a nebo css. data jsou zadána v options.dataSource kde je buď vlastnost data, které se zadává jako joon pole objektů nebo fetch kde jsou data dotažena vzdleně pomocí $.ajax jako pole json a napělnšna do řádků qpDtaGridRow. qpDataGrid i qpDataGridRow jsou potomky qpWidget
  */
 (function($) {
 	$.fn.qpDataGrid = function(options) {
